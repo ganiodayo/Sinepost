@@ -11,7 +11,7 @@ public class Test : MonoBehaviour {
 
 	void Awake(){
 
-		table = Wavetable.Sine;
+		table = Wavetable.Triangle;
 		wave = table;
 		oscil = new Oscillator(0.5f, 440f, table);
 

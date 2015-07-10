@@ -408,12 +408,12 @@ namespace Otherwise {
 
 		public static implicit operator AnimationCurve(Wavetable wave){
 
-			Keyframe[] map = new Keyframe[wave.Size];
+			Keyframe[] period = new Keyframe[wave.Size];
 
-			for(int i = 0; i < map.Length; i++)
-				map[i] = new Keyframe((float)i / map.Length, wave[i]);
+			for(int i = 0; i < period.Length; i++)
+				period[i] = new Keyframe((float)i / period.Length, wave[i]);
 
-			return new AnimationCurve(map);
+			return new AnimationCurve(period);
 
 		}
 
@@ -452,6 +452,17 @@ namespace Otherwise {
 			get{
 
 				return new Wavetable((ref double x) => { x += x % 2 != 1 ? 1 : 0; return x++; }, (ref double x) => { x += x % 2 != 1 ? 1 : 0; return 1d / x++; }, 50u);
+				
+			}
+			
+		}
+
+		public static Wavetable Triangle{
+			
+			get{
+				
+				return new Wavetable((ref double x) => { x += x % 2 != 1 ? 1 : 0; return x++; },
+					(ref double x) => { x += x % 2 != 1 ? 1 : 0; return 1d / (x * x++); }, (ref double x) => x += Math.PI, 50u);
 				
 			}
 			
