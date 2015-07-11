@@ -113,11 +113,13 @@ namespace Otherwise {
 
 		//List<T>() : Signal
 
+		void OnEnable();
+
 		void OnTransformChildrenChanged();
 
 	}
 
-	public class Instrument : MonoBehaviour, IAudible {
+	public class Member : MonoBehaviour, IAudible {
 
 		//generic list of type signal;
 
@@ -125,43 +127,54 @@ namespace Otherwise {
 
 		}
 
-		public void OnTransformChildrenChanged(){
+		public void OnEnable(){}
 
-
-		}
+		public void OnTransformChildrenChanged(){}
 		
-		public static Instrument operator ++ (Instrument instrument){
-			
-			return new Instrument();
-			
-		}
+//		public static Instrument operator ++ (Instrument instrument){
+//			
+//			return new Instrument();
+//			
+//		}
+//
+//		public static Instrument operator -- (Instrument instrument){
+//
+//			//reverse? voice?
+//
+//			return new Instrument();
+//			
+//		}
 		
 	}
 
 	public class Orchestra : MonoBehaviour, IAudible {
 
-		private readonly Instrument[] instrument;
+		private readonly Member[] members;
 
-		public Orchestra(params Instrument[] members){
+		public Orchestra(params Member[] members){
 
-			this.instrument = members;
+			this.members = members;
 
 		}
 
 		void Awake(){
 			
 		}
+
+		public void OnEnable(){
+
+		}
 		
 		public void OnTransformChildrenChanged(){
 			
 			
 		}
 
-		public Instrument this[int index]{
+		public Member this[int index]{
 			
 			get{
 				
-				return instrument[index];
+				return members[index];
 				
 			}
 			
@@ -175,8 +188,9 @@ namespace Otherwise {
 
 		private readonly float[] waveform;
 		private readonly uint size;
+		private float ratio = 1f;
 
-		public Wavetable(double[] amplitude, uint size = 8192u){
+		public Wavetable(double[] amplitude, uint size = 4096u){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -201,7 +215,7 @@ namespace Otherwise {
 			
 		}
 
-		public Wavetable(Recurse amplitude, uint iterations = 1u, uint size = 8192u){
+		public Wavetable(Recurse amplitude, uint iterations = 64u, uint size = 4096u){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -215,7 +229,7 @@ namespace Otherwise {
 				index = i / (this.size - 1f);
 				
 				for(uint j = 0u; j < iterations; j++)
-					waveform[i] += (float)(1/a * Math.Sin(2d * Math.PI * (j + 1) * index));
+					waveform[i] += (float)(amplitude(ref a) * Math.Sin(2d * Math.PI * (j + 1) * index));
 				
 				if(Mathf.Abs(waveform[i]) > peak)
 					peak = Mathf.Abs(waveform[i]);
@@ -227,7 +241,7 @@ namespace Otherwise {
 			
 		}
 
-		public Wavetable(double[] partial, double[] amplitude, uint size = 8192u){
+		public Wavetable(double[] partial, double[] amplitude, uint size = 4096u){
 
 			this.size = size;
 			waveform = new float[this.size];
@@ -252,7 +266,7 @@ namespace Otherwise {
 			
 		}
 
-		public Wavetable(Recurse partial, Recurse amplitude, uint iterations = 1u, uint size = 8192u){
+		public Wavetable(Recurse partial, Recurse amplitude, uint iterations = 64u, uint size = 4096u){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -279,7 +293,7 @@ namespace Otherwise {
 			
 		}
 		
-		public Wavetable(double[] partial, double[] amplitude, double[] phase, uint size = 8192u){
+		public Wavetable(double[] partial, double[] amplitude, double[] phase, uint size = 4096u){
 
 			this.size = size;
 			waveform = new float[this.size];
@@ -304,7 +318,7 @@ namespace Otherwise {
 			
 		}
 
-		public Wavetable(Recurse partial, Recurse amplitude, Recurse phase, uint iterations = 1u, uint size = 8192u){
+		public Wavetable(Recurse partial, Recurse amplitude, Recurse phase, uint iterations = 64u, uint size = 4096u){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -332,7 +346,7 @@ namespace Otherwise {
 			
 		}
 		
-		public Wavetable(double[] partial, double[] amplitude, double[] phase, double[] offset, uint size = 8192u){
+		public Wavetable(double[] partial, double[] amplitude, double[] phase, double[] offset, uint size = 4096u){
 
 			this.size = size;
 			waveform = new float[this.size];
@@ -357,7 +371,7 @@ namespace Otherwise {
 			
 		}
 
-		public Wavetable(Recurse partial, Recurse amplitude, Recurse phase, Recurse offset, uint iterations = 1u, uint size = 8192u){
+		public Wavetable(Recurse partial, Recurse amplitude, Recurse phase, Recurse offset, uint iterations = 64u, uint size = 4096u){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -386,6 +400,174 @@ namespace Otherwise {
 			
 		}
 
+		public Wavetable(Markov chain, bool mirror = false, uint size = 4096u){
+
+			//fix this
+
+			this.size = size;
+			waveform = new float[this.size];
+
+			float peak = float.MinValue;
+			
+			for(int i = 0; i < waveform.Length; i++){
+
+				waveform[i] = mirror && i >= waveform.Length / 2 ? -waveform[waveform.Length / 2 - i] : chain.Next();
+
+				if(Mathf.Abs(this.waveform[i]) > peak)
+					peak = Mathf.Abs(this.waveform[i]);
+				
+			}
+			
+			for(int i = 0; i < this.size; i++)
+				this.waveform[i] /= peak;
+
+		}
+
+		private Wavetable(float[] waveform){
+
+			this.waveform = waveform;
+			this.size = (uint)waveform.Length;
+			float peak = float.MinValue;
+
+			for(int i = 0; i < waveform.Length; i++){
+
+				if(Mathf.Abs(this.waveform[i]) > peak)
+					peak = Mathf.Abs(this.waveform[i]);
+
+			}
+
+			for(int i = 0; i < this.size; i++)
+				this.waveform[i] /= peak;
+
+		}
+
+		public static Wavetable operator ~ (Wavetable wave){
+			
+			float[] waveform = new float[wave.Size];
+			
+			for(int i = 0; i < waveform.Length; i++)
+				waveform[i] -= wave[i];
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator ! (Wavetable wave){
+
+			float offset = 0;
+			float[] waveform = new float[wave.Size];
+
+			for(int i = 0; i < waveform.Length; i++)
+				offset += wave[i];
+
+			offset /= waveform.Length;
+
+			for(int i = 0; i < waveform.Length; i++)
+				waveform[i] = wave[i] - offset;
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator ++ (Wavetable wave){
+			
+			float[] waveform = new float[wave.Size];
+			
+			for(int i = 0; i < waveform.Length; i++)
+				waveform[i] = wave[i] + 1f;
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator -- (Wavetable wave){
+			
+			float[] waveform = new float[wave.Size];
+			
+			for(int i = 0; i < waveform.Length; i++)
+				waveform[i] = wave[i] - 1f;
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator + (Wavetable w1, Wavetable w2){
+			
+			float[] waveform = new float[4096];
+			
+			for(int i = 0; i < 4096; i++)
+				waveform[i] = w1.ratio * w1[i * w1.Size / 4096f] + w2.ratio * w2[i * w2.Size / 4096f];
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator - (Wavetable w1, Wavetable w2){
+			
+			float[] waveform = new float[4096];
+			
+			for(int i = 0; i < 4096; i++)
+				waveform[i] = w1.ratio * w1[i * w1.Size / 4096f] - w2.ratio * w2[i * w2.Size / 4096f];
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator ^ (Wavetable wave, float bitDepth){
+			
+			float[] waveform = new float[wave.Size];
+			bitDepth = Mathf.Pow(2f, Mathf.Abs(bitDepth));
+
+			for(int i = 0; i < waveform.Length; i++)
+				waveform[i] = Mathf.Round(wave[i] * bitDepth) / bitDepth;
+
+			return new Wavetable(waveform);
+			
+		}
+		
+		public static Wavetable operator | (Wavetable w1, Wavetable w2){
+
+			w1.ratio /= w1.ratio + w2.ratio;
+			w2.ratio = 1f - w1.ratio;
+			float[] waveform = new float[4096];
+
+			for(int i = 0; i < 4096; i++)
+				waveform[i] = i >= w1.ratio * 4096f? w1[i * w1.Size / 4096f] : w2[i * w2.Size / 4096f];
+
+			return new Wavetable(waveform);
+
+		}
+
+		public static Wavetable operator >> (Wavetable wave, int phase){
+			
+			float[] waveform = new float[wave.Size];
+			
+			for(int i = 0; i < waveform.Length; i++)
+				waveform[i] -= wave[(i + phase) % waveform.Length];
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator << (Wavetable wave, int phase){
+			
+			float[] waveform = new float[wave.Size];
+			
+			for(int i = 0; i < waveform.Length; i++)
+				waveform[i] -= wave[(i + waveform.Length - phase) % waveform.Length];
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator * (Wavetable wave, float f){
+			
+			wave.ratio *= f;
+			
+			return wave;
+			
+		}
+
 		public float this[int index]{
 			
 			get{
@@ -406,6 +588,15 @@ namespace Otherwise {
 			
 		}
 
+		public static implicit operator Markov(Wavetable wave){
+
+			Markov chain = new Markov((int)wave.Size);
+			chain.Stream(wave.waveform);
+
+			return chain;
+
+		}
+
 		public static implicit operator AnimationCurve(Wavetable wave){
 
 			Keyframe[] period = new Keyframe[wave.Size];
@@ -415,6 +606,17 @@ namespace Otherwise {
 
 			return new AnimationCurve(period);
 
+		}
+
+		public static implicit operator Wavetable(AnimationCurve curve){
+			
+			float[] waveform = new float[4096];
+
+			for(int i = 0; i < 4096; i++)
+				waveform[i] = curve.Evaluate(i / 4096f);
+
+			return new Wavetable(waveform);
+			
 		}
 
 		public uint Size{
@@ -431,7 +633,7 @@ namespace Otherwise {
 			
 			get{
 				
-				return new Wavetable((ref double x) => 1d);
+				return new Wavetable(new double[1]{1d});
 				
 			}
 			
@@ -441,7 +643,8 @@ namespace Otherwise {
 			
 			get{
 
-				return new Wavetable((ref double x) => 1d / x++, 50u);
+				return new Wavetable((ref double x) => x++, (ref double x) => 1d / x++,
+				                     (ref double x) => x += x > Math.PI ? Math.PI : 2d * Math.PI, 64u);
 									
 			}
 			
@@ -451,7 +654,7 @@ namespace Otherwise {
 			
 			get{
 
-				return new Wavetable((ref double x) => { x += x % 2 != 1 ? 1 : 0; return x++; }, (ref double x) => { x += x % 2 != 1 ? 1 : 0; return 1d / x++; }, 50u);
+				return new Wavetable((ref double x) => { x += x % 2 != 1 ? 1 : 0; return x++; }, (ref double x) => { x += x % 2 != 1 ? 1 : 0; return 1d / x++; }, 64u);
 				
 			}
 			
@@ -461,8 +664,8 @@ namespace Otherwise {
 			
 			get{
 				
-				return new Wavetable((ref double x) => { x += x % 2 != 1 ? 1 : 0; return x++; },
-					(ref double x) => { x += x % 2 != 1 ? 1 : 0; return 1d / (x * x++); }, (ref double x) => x += Math.PI, 50u);
+				return new Wavetable((ref double x) => { x += x % 2 != 1 ? 1 : 0; return x++; }, (ref double x) => { x += x % 2 != 1 ? 1 : 0; return 1d / (x * x++); },
+							(ref double x) => x += x > Math.PI ? Math.PI : 2d * Math.PI, 64u);
 				
 			}
 			
@@ -524,22 +727,22 @@ namespace Otherwise {
 		//phasor getter
 		//frequency modifier for inclusion in instrument?
 
-		public Oscillator(float a, float f){
+		public Oscillator(float amplitude, float frequency){
 
-			amplitude = a;
-			frequency = f;
-			wavetable = Wavetable.Sine;
+			this.amplitude = amplitude;
+			this.frequency = frequency;
+			this.wavetable = Wavetable.Sine;
 
 			channels = SpeakerMode();
 			panner = new float[channels];
 
 		}
 
-		public Oscillator(float a, float f, Wavetable w){
+		public Oscillator(float amplitude, float frequency, Wavetable wavetable){
 
-			amplitude = a;
-			frequency = f;
-			wavetable = w;
+			this.amplitude = amplitude;
+			this.frequency = frequency;
+			this.wavetable = wavetable;
 
 			channels = SpeakerMode();
 			panner = new float[channels];
@@ -591,6 +794,210 @@ namespace Otherwise {
 			
 		}
 
+	}
+
+	public class Instrument : Signal {
+
+		public override float datum{
+			
+			get{
+				
+				return sample;
+				
+			}
+			
+		}
+		
+		public override void Stream(ref float[] data){
+			
+			for(int i = 0; i < data.Length; i++)
+				data[i] = datum;
+			
+		}
+
+	}
+
+	public class Markov {
+
+		//comparable list search with lambdas
+
+		class State {
+			
+			public float[] past;
+			public List<float> future = new List<float>();
+			
+			public State(float[] past){
+				
+				this.past = past;
+				
+			}
+			
+			public float Select(){
+				
+				return future[UnityEngine.Random.Range(0, future.Count)];
+				
+			}
+			
+		}
+		
+		public bool init;
+		
+		private int order;
+		private float[] status;
+		private List<State> states = new List<State>();
+		
+		public Markov(int order){
+			
+			this.order = order < 1 ? 1 : order;
+			
+		}
+		
+		public void Stream(List<float> data){
+			
+			float[] temp = new float[order];
+			
+			if(data.Count > order){
+				
+				init = true;
+				
+				for(int i = 0; i < data.Count; i++){
+					
+					for(int j = 0; j < this.order; j++)
+						temp[j] = data[(i + j) % data.Count];
+					
+					if(states.Count > 0){
+						
+						bool test = false;
+						
+						for(int k = 0; k < states.Count; k++){
+
+							int match = 0;
+
+							for(int l = 0; l < order; l++){
+
+								if(Mathf.Approximately(temp[l], states[k].past[l]))
+									match++;
+								else
+									break;
+
+							}
+
+							if(match == order){
+
+								states[k].future.Add(data[(i + this.order) % data.Count]);
+								break;
+
+							}
+
+						}
+						
+						if(!test)
+							states.Add(new State(temp));
+						
+					} else
+						states.Add(new State(temp));
+					
+				}
+				
+			}
+			
+		}
+		
+		public void Stream(params float[] data){
+			
+			float[] temp = new float[order];
+			
+			if(data.Length > order){
+				
+				init = true;
+				
+				for(int i = 0; i < data.Length; i++){
+					
+					for(int j = 0; j < this.order; j++)
+						temp[j] = data[(i + j) % data.Length];
+					
+					if(states.Count > 0){
+						
+						bool test = false;
+						
+						for(int k = 0; k < states.Count; k++){
+							
+							int match = 0;
+							
+							for(int l = 0; l < order; l++){
+								
+								if(Mathf.Approximately(temp[l], states[k].past[l]))
+									match++;
+								else
+									break;
+								
+							}
+							
+							if(match == order){
+								
+								states[k].future.Add(data[(i + this.order) % data.Length]);
+								break;
+								
+							}
+							
+						}
+						
+						if(!test)
+							states.Add(new State(temp));
+						
+					} else
+						states.Add(new State(temp));
+					
+				}
+				
+			}
+			
+		}
+		
+		public float Next(){
+			
+			if(init){
+				
+				if(states.Count > 0 && status == null)
+					status = states[UnityEngine.Random.Range(0, states.Count)].past;
+				
+				float current = status[status.Length - 1];
+				State state;
+
+				for(int i = 0; i < states.Count; i++){
+
+					int match = 0;
+					
+					for(int j = 0; j < order; j++){
+						
+						if(Mathf.Approximately(status[j], states[i].past[j]))
+							match++;
+						else
+							break;
+						
+					}
+					
+					if(match == order){
+						
+						state = states[i];
+						current = state.Select();
+						
+						for(i = 0; i < status.Length; i++)
+							status[i] = i == status.Length - 1 ? current : status[i + 1];
+
+						break;
+						
+					}
+					
+				}
+				
+				return current;
+				
+			} else
+				return 0f;
+			
+		}
+		
 	}
 
 }
