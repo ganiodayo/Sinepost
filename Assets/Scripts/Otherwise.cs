@@ -148,7 +148,7 @@ namespace Otherwise {
 	public interface IAudible {
 
 		//List<T>() : Signal
-
+		
 		//transition message system;
 
 		void OnEnable();
@@ -157,7 +157,7 @@ namespace Otherwise {
 
 	}
 
-	public class Member : MonoBehaviour, IAudible {
+	public sealed class Instrumentalist : MonoBehaviour, IAudible {
 
 		//generic list of type signal;
 
@@ -171,11 +171,11 @@ namespace Otherwise {
 		
 	}
 
-	public class Orchestra : MonoBehaviour, IAudible {
+	public sealed class Orchestra : MonoBehaviour, IAudible {
 
-		private readonly Member[] members;
+		private readonly Instrumentalist[] members;
 
-		public Orchestra(params Member[] members){
+		public Orchestra(params Instrumentalist[] members){
 
 			this.members = members;
 
@@ -194,7 +194,7 @@ namespace Otherwise {
 			
 		}
 
-		public Member this[int index]{
+		public Instrumentalist this[int index]{
 			
 			get{
 				
@@ -212,7 +212,7 @@ namespace Otherwise {
 
 	}
 
-	public class Wavetable {
+	public sealed class Wavetable {
 
 		//own gui
 
@@ -598,7 +598,7 @@ namespace Otherwise {
 			float[] waveform = new float[4096];
 
 			for(int i = 0; i < 4096; i++)
-				waveform[i] = i >= w1.ratio * 4096f? w1[i * w1.Size / 4096f] : w2[i * w2.Size / 4096f];
+				waveform[i] = i <= w1.ratio * 4096f ? w1[i * w1.Size / 4096f] : w2[i * w2.Size / 4096f];
 
 			return new Wavetable(waveform);
 
@@ -741,18 +741,19 @@ namespace Otherwise {
 
 	public abstract class Signal : IComparable {
 
-		//comparable.
-
-		public uint check = 0, channels = 2;
-		public readonly int sampleRate = AudioSettings.outputSampleRate;
-		public float amplitude, duration, sample;
-		public float[] panner;
+		protected readonly int sampleRate = AudioSettings.outputSampleRate;
+		protected readonly double init = AudioSettings.dspTime;
+		protected uint check = 0, channels = 2;
+		protected float amplitude, amplitudeModifier = 1f, duration, sample;
+		protected float[] panner;
 
 		// vector2 -> equal power panner struct?
 
-		public abstract float render{ get; }
-		public abstract float datum{ get; }
+		public abstract float Amplitude{ get; set; }
+		public abstract float Render{ get; }
+		public abstract float Datum{ get; }
 		public abstract void Stream(ref float[] data);
+		public abstract void Pan(Vector2 position);
 
 		public uint SpeakerMode(){
 			
@@ -794,52 +795,80 @@ namespace Otherwise {
 		
 	}
 
-	public class Oscillator : Signal {
+	public abstract class Periodic : Signal {
 
-		public float frequency, modifier = 1f;
+		protected float frequency, frequencyModifier = 1f;
+
+		public abstract float Frequency{ get; set; }
+
+	}
+
+	public class Oscillator : Periodic {
+
 		private float phasor;
-		private double time;
 		public Wavetable wavetable;
 
-		//frequency modifier for inclusion in instrument
+		public Oscillator(float amplitudeModifier, float frequencyModifier){
 
-		public Oscillator(float amplitude, float frequencyModifier){
-
-			this.amplitude = amplitude;
-			this.frequency = frequencyModifier;
-			this.modifier = frequencyModifier;
+			this.amplitudeModifier = amplitudeModifier;
+			this.frequencyModifier = frequencyModifier;
 			this.wavetable = Wavetable.Sine;
 
 			channels = SpeakerMode();
 			panner = new float[channels];
-			time = AudioSettings.dspTime;
 
 		}
 
-		public Oscillator(float amplitude, float frequencyModifier, Wavetable wavetable){
+		public Oscillator(float amplitudeModifier, float frequencyModifier, Wavetable wavetable){
 
-			this.amplitude = amplitude;
-			this.frequency = frequencyModifier;
-			this.modifier = frequencyModifier;
+			this.amplitudeModifier = amplitudeModifier;
+			this.frequencyModifier = frequencyModifier;
 			this.wavetable = wavetable;
 
 			channels = SpeakerMode();
 			panner = new float[channels];
-			time = AudioSettings.dspTime;
 
 		}
 
-		public override float render{
+		public override float Amplitude{
 			
 			get{
-
-				return wavetable[((float)(AudioSettings.dspTime - time) * frequency * wavetable.Size) % wavetable.Size] * amplitude;
+				
+				return amplitude;
+				
+			} set{
+				
+				amplitude = value * this.amplitudeModifier;
 				
 			}
 			
 		}
 
-		public override float datum{
+		public override float Frequency{
+
+			get{
+
+				return frequency;
+
+			} set{
+
+				frequency = value * this.frequencyModifier;
+
+			}
+
+		}
+
+		public override float Render{
+			
+			get{
+
+				return wavetable[((float)(AudioSettings.dspTime - init) * frequency * wavetable.Size) % wavetable.Size] * amplitude;
+				
+			}
+			
+		}
+
+		public override float Datum{
 			
 			get{
 				
@@ -859,15 +888,31 @@ namespace Otherwise {
 		public override void Stream(ref float[] data){
 
 			for(int i = 0; i < data.Length; i++)
-				data[i] = datum;
+				data[i] = Datum;
 				
 		}
+
+		public override void Pan (Vector2 position){}
 		
 	}
 
 	public class Noise : Signal {
 
-		public override float render{
+		public override float Amplitude{
+			
+			get{
+				
+				return amplitude;
+				
+			} set{
+				
+				amplitude = value * this.amplitudeModifier;
+				
+			}
+			
+		}
+
+		public override float Render{
 			
 			get{
 				
@@ -877,7 +922,7 @@ namespace Otherwise {
 			
 		}
 
-		public override float datum{
+		public override float Datum{
 			
 			get{
 				
@@ -890,45 +935,29 @@ namespace Otherwise {
 		public override void Stream(ref float[] data){
 			
 			for(int i = 0; i < data.Length; i++)
-				data[i] = datum;
+				data[i] = Datum;
 			
 		}
 
+		public override void Pan (Vector2 position){}
+
 	}
 
-	public class Instrument : Signal {
+	public class Instrument : Periodic, IEnumerable {
 
-		public float frequency = 440f;
 		public readonly Envelope envelope;
 		private List<Signal> signals = new List<Signal>();
 
-		public Instrument(float amplitude, float frequency, params Signal[] signals){
+		public Instrument(float amplitudeModifier, float frequencyModifier, params Signal[] signals){
 
-			this.amplitude = amplitude;
-			this.frequency = frequency;
+			this.amplitudeModifier = amplitudeModifier;
+			this.frequencyModifier = frequencyModifier;
 
 			for(int i = 0; i < signals.Length; i++)
 				this.signals.Add(signals[i]);
 
-			foreach(Oscillator oscil in signals)
-				oscil.frequency = oscil.modifier * this.frequency;
-
 		}
-
-//		public static Instrument operator ++ (Instrument instrument){
-//			
-//			return new Instrument();
-//			
-//		}
-//
-//		public static Instrument operator -- (Instrument instrument){
-//
-//			//reverse? voice?
-//
-//			return new Instrument();
-//			
-//		}
-
+		
 		public Signal this[int index]{
 			
 			get{
@@ -939,29 +968,63 @@ namespace Otherwise {
 			
 		}
 
-		public override float render{
+		public override float Amplitude{
+			
+			get{
+				
+				return amplitude;
+				
+			} set{
+				
+				amplitude = value * this.amplitudeModifier;
+			
+				foreach(Signal audible in signals)
+					audible.Amplitude = amplitude;
+
+			}
+			
+		}
+
+		public override float Frequency{
+			
+			get{
+				
+				return frequency;
+				
+			} set{
+				
+				frequency = value * this.frequencyModifier;
+
+				foreach(Periodic periodic in signals)
+						periodic.Frequency = frequency;
+				
+			}
+			
+		}
+
+		public override float Render{
 			
 			get{
 
 				float output = 0f;
 
 				for(int i = 0; i < signals.Count; i++)
-					sample += signals[i].render * this.amplitude;
+					output += signals[i].Render * this.amplitude;
 
-				return sample;
+				return output;
 				
 			}
 			
 		}
 
-		public override float datum{
+		public override float Datum{
 			
 			get{
 
 				sample = 0f;
 
 				for(int i = 0; i < signals.Count; i++)
-					sample += signals[i].datum * this.amplitude;
+					sample += signals[i].Datum * this.amplitude;
 
 				return sample;
 				
@@ -972,8 +1035,16 @@ namespace Otherwise {
 		public override void Stream(ref float[] data){
 			
 			for(int i = 0; i < data.Length; i++)
-				data[i] = datum;
+				data[i] = Datum;
 			
+		}
+
+		public override void Pan (Vector2 position){}
+
+		public IEnumerator GetEnumerator(){
+
+			return signals.GetEnumerator();
+
 		}
 
 	}

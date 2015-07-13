@@ -11,28 +11,25 @@ public class Test : MonoBehaviour {
 	[HideInInspector]
 	public float floatDifference, currentFrameRate, averageDeltaTime, deltaTime, deltaTimeTest, unscaledDeltaTime, unscaledDeltaTimeTest;
 
-	public AnimationCurve wave, test;
-	public float frequency = 440f, bitDepth = 32f;
-	private Oscillator oscil, sine, sawtooth, square, triangle;
+	public AnimationCurve wave;
+	public float frequency = 1f, bitDepth = 32f;
+	private Oscillator sine, sawtooth, square, triangle, play;
 	private Wavetable table;
 
 	private Instrument instrument;
 
 	void Awake(){
 
-		oscil = new Oscillator(0.5f, 440f, Wavetable.Sine);
-		Oscillator o1 = new Oscillator(0.1f, 880f, Wavetable.Sine), o2 = new Oscillator(0.01f, 1f, Wavetable.Triangle);
-		instrument = new Instrument(1f, 880f, o1, o2);
+		play = new Oscillator(0.1f, 1f);
 
-		//recursive wavetable interpolation system!
-
+		instrument = new Instrument(1f, 1f, play);
+		instrument.Frequency = 350f;
+		//sinusoidal interpolation system 
 
 		Wavetable r1 = Wavetable.Sine;
 		Wavetable r2 = ~(++r1);
 		Wavetable r3 = ~r2;
 		Wavetable r4 = ~r3;
-
-		test = r1 + r3;
 
 		sine = new Oscillator(1f, frequency, r1);
 		sawtooth = new Oscillator(1f, frequency, r2);
@@ -55,7 +52,7 @@ public class Test : MonoBehaviour {
 		currentFrameRate = Time.frameCount / Time.time;
 		averageDeltaTime = 1 / currentFrameRate;
 
-		//signal.sample vs signal.render
+		//signal.sample vs signal.Render
 
 	}
 
@@ -63,22 +60,31 @@ public class Test : MonoBehaviour {
 
 		Monitor();
 
-		float r1 = sine.render, r2 = sawtooth.render, r3 = square.render, r4 = triangle.render;
+		float r1 = sine.Render, r2 = sawtooth.Render, r3 = square.Render, r4 = triangle.Render;
 
-		sine.frequency = frequency;
-		sawtooth.frequency = frequency;
-		square.frequency = frequency;
-		triangle.frequency = frequency;
+		sine.Frequency = frequency;
+		sawtooth.Frequency = frequency;
+		square.Frequency = frequency;
+		triangle.Frequency = frequency;
 		bitDepth = r2 * bitDepth + 1f;
-		oscil.wavetable = (Wavetable.Sine * r1 + Wavetable.Sawtooth * r2) ^ bitDepth;// +  Wavetable.Square * r3 + Wavetable.Triangle * r4;
+		Wavetable modulated = ((Wavetable.Square * r3 + Wavetable.Triangle * r4) ^ (bitDepth) * r1) +
+			((Wavetable.Sine * r1 + Wavetable.Sawtooth * r2) ^ (33f - bitDepth) * r3) |
+			((Wavetable.Square * r3 + Wavetable.Triangle * r4) ^ (bitDepth) * r4) +
+			((Wavetable.Sine * r1 + Wavetable.Sawtooth * r2) ^ (33f - bitDepth) * r2);
 
-		wave = oscil.wavetable;
+		foreach(Oscillator oscil in instrument){
+
+			oscil.wavetable = modulated;
+
+			wave = oscil.wavetable;
+
+		}
 
 	}
 
 	void OnAudioFilterRead(float[] data, int channels){
 
-		instrument.Stream(ref data);
+		play.Stream(ref data);
 
 	}
 
