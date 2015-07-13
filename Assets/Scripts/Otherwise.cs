@@ -10,22 +10,52 @@ namespace Otherwise {
 		public float tempo = 120f;
 		public rhythmic signature;
 
+		public delegate float Tuning(decimal x);
+		public Tuning temperament;
+
+		public struct cyclic {
+
+			public decimal? note;
+			public float? frequency;
+			public byte? velocity;
+			public rhythmic duration;
+
+			public static implicit operator cyclic(decimal note){
+
+				cyclic output = new cyclic();
+				output.note = note;
+
+				return output;
+
+			}
+
+			public static implicit operator cyclic(rhythmic rest){
+				
+				cyclic output = new cyclic();
+				output.note = null;
+				output.frequency = null;
+				output.velocity = null;
+				
+				return output;
+				
+			}
+			
+		}
+
 		public struct rhythmic {
 			
 			public int numerator;
 			public int denominator;
-
-		}
-		
-		public struct cyclic {
-
-			public byte velocity;
-			public float frequency; //nullable?
-			public rhythmic duration;
 			
 		}
 
 		public abstract void Read();
+
+		public Tuning EqualTemperament(uint octaveDivision = 12u, float concertPitch = 440f){
+
+			return (decimal x) => concertPitch * Mathf.Pow(2f, (float)(x - octaveDivision * 5u + 9u) / octaveDivision);
+
+		}
 		
 	}
 
@@ -36,8 +66,14 @@ namespace Otherwise {
 		public int index;
 
 		public Part(rhythmic beat, cyclic note){
+			
+			this.temperament = EqualTemperament(12u, 440f);
+			
+		}
 
+		public Part(rhythmic beat, cyclic note, Tuning temperament){
 
+			this.temperament = temperament;
 
 		}
 
@@ -49,7 +85,7 @@ namespace Otherwise {
 
 		}
 		
-		public override void Read (){
+		public override void Read(){
 			
 			
 			
@@ -113,6 +149,8 @@ namespace Otherwise {
 
 		//List<T>() : Signal
 
+		//transition message system;
+
 		void OnEnable();
 
 		void OnTransformChildrenChanged();
@@ -130,20 +168,6 @@ namespace Otherwise {
 		public void OnEnable(){}
 
 		public void OnTransformChildrenChanged(){}
-		
-//		public static Instrument operator ++ (Instrument instrument){
-//			
-//			return new Instrument();
-//			
-//		}
-//
-//		public static Instrument operator -- (Instrument instrument){
-//
-//			//reverse? voice?
-//
-//			return new Instrument();
-//			
-//		}
 		
 	}
 
@@ -182,7 +206,15 @@ namespace Otherwise {
 
 	}
 
+	public class Envelope {
+
+		//final key = release;
+
+	}
+
 	public class Wavetable {
+
+		//own gui
 
 		public delegate double Recurse(ref double x);
 
@@ -443,12 +475,7 @@ namespace Otherwise {
 
 		public static Wavetable operator ~ (Wavetable wave){
 			
-			float[] waveform = new float[wave.Size];
-			
-			for(int i = 0; i < waveform.Length; i++)
-				waveform[i] -= wave[i];
-			
-			return new Wavetable(waveform);
+			return wave >> (int)wave.Size / 4;
 			
 		}
 
@@ -464,6 +491,23 @@ namespace Otherwise {
 
 			for(int i = 0; i < waveform.Length; i++)
 				waveform[i] = wave[i] - offset;
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator + (Wavetable wave){
+			
+			return new Wavetable(wave);
+			
+		}
+
+		public static Wavetable operator - (Wavetable wave){
+			
+			float[] waveform = new float[wave.Size];
+			
+			for(int i = 0; i < waveform.Length; i++)
+				waveform[i] = -wave[i];
 			
 			return new Wavetable(waveform);
 			
@@ -513,6 +557,28 @@ namespace Otherwise {
 			
 		}
 
+		public static Wavetable operator * (Wavetable w1, Wavetable w2){
+			
+			float[] waveform = new float[4096];
+			
+			for(int i = 0; i < 4096; i++)
+				waveform[i] = w1[i * w1.Size / 4096f] * w2[i * w2.Size / 4096f];
+			
+			return new Wavetable(waveform);
+			
+		}
+
+		public static Wavetable operator / (Wavetable w1, Wavetable w2){
+			
+			float[] waveform = new float[4096];
+			
+			for(int i = 0; i < 4096; i++)
+				waveform[i] = w1[i * w1.Size / 4096f] / w2[i * w2.Size / 4096f];
+			
+			return new Wavetable(waveform);
+			
+		}
+
 		public static Wavetable operator ^ (Wavetable wave, float bitDepth){
 			
 			float[] waveform = new float[wave.Size];
@@ -543,7 +609,7 @@ namespace Otherwise {
 			float[] waveform = new float[wave.Size];
 			
 			for(int i = 0; i < waveform.Length; i++)
-				waveform[i] -= wave[(i + phase) % waveform.Length];
+				waveform[i] = wave[(i + phase) % waveform.Length];
 			
 			return new Wavetable(waveform);
 			
@@ -554,7 +620,7 @@ namespace Otherwise {
 			float[] waveform = new float[wave.Size];
 			
 			for(int i = 0; i < waveform.Length; i++)
-				waveform[i] -= wave[(i + waveform.Length - phase) % waveform.Length];
+				waveform[i] = wave[(i + waveform.Length - phase) % waveform.Length];
 			
 			return new Wavetable(waveform);
 			
@@ -562,7 +628,7 @@ namespace Otherwise {
 
 		public static Wavetable operator * (Wavetable wave, float f){
 			
-			wave.ratio *= f;
+			wave.ratio = f;
 			
 			return wave;
 			
@@ -582,7 +648,7 @@ namespace Otherwise {
 			
 			get{
 
-				return waveform[Mathf.FloorToInt(index)] * (1f - (index % 1f)) + waveform[Mathf.CeilToInt(index) % waveform.Length] * (index % 1f);
+				return waveform[Mathf.FloorToInt(index) % waveform.Length] * (1f - (index % 1f)) + waveform[Mathf.CeilToInt(index) % waveform.Length] * (index % 1f);
 				
 			}
 			
@@ -673,7 +739,9 @@ namespace Otherwise {
 		
 	}
 
-	public abstract class Signal {
+	public abstract class Signal : IComparable {
+
+		//comparable.
 
 		public uint check = 0, channels = 2;
 		public readonly int sampleRate = AudioSettings.outputSampleRate;
@@ -682,6 +750,7 @@ namespace Otherwise {
 
 		// vector2 -> equal power panner struct?
 
+		public abstract float render{ get; }
 		public abstract float datum{ get; }
 		public abstract void Stream(ref float[] data);
 
@@ -716,37 +785,58 @@ namespace Otherwise {
 			}
 			
 		}
+
+		public int CompareTo(object o){
+
+			return 0;
+
+		}
 		
 	}
 
 	public class Oscillator : Signal {
 
-		private float frequency, phasor;
-		private readonly Wavetable wavetable;
+		public float frequency, modifier = 1f;
+		private float phasor;
+		private double time;
+		public Wavetable wavetable;
 
-		//phasor getter
-		//frequency modifier for inclusion in instrument?
+		//frequency modifier for inclusion in instrument
 
-		public Oscillator(float amplitude, float frequency){
+		public Oscillator(float amplitude, float frequencyModifier){
 
 			this.amplitude = amplitude;
-			this.frequency = frequency;
+			this.frequency = frequencyModifier;
+			this.modifier = frequencyModifier;
 			this.wavetable = Wavetable.Sine;
 
 			channels = SpeakerMode();
 			panner = new float[channels];
+			time = AudioSettings.dspTime;
 
 		}
 
-		public Oscillator(float amplitude, float frequency, Wavetable wavetable){
+		public Oscillator(float amplitude, float frequencyModifier, Wavetable wavetable){
 
 			this.amplitude = amplitude;
-			this.frequency = frequency;
+			this.frequency = frequencyModifier;
+			this.modifier = frequencyModifier;
 			this.wavetable = wavetable;
 
 			channels = SpeakerMode();
 			panner = new float[channels];
+			time = AudioSettings.dspTime;
 
+		}
+
+		public override float render{
+			
+			get{
+
+				return wavetable[((float)(AudioSettings.dspTime - time) * frequency * wavetable.Size) % wavetable.Size] * amplitude;
+				
+			}
+			
 		}
 
 		public override float datum{
@@ -777,6 +867,16 @@ namespace Otherwise {
 
 	public class Noise : Signal {
 
+		public override float render{
+			
+			get{
+				
+				return sample;
+				
+			}
+			
+		}
+
 		public override float datum{
 			
 			get{
@@ -798,10 +898,71 @@ namespace Otherwise {
 
 	public class Instrument : Signal {
 
-		public override float datum{
+		public float frequency = 440f;
+		public readonly Envelope envelope;
+		private List<Signal> signals = new List<Signal>();
+
+		public Instrument(float amplitude, float frequency, params Signal[] signals){
+
+			this.amplitude = amplitude;
+			this.frequency = frequency;
+
+			for(int i = 0; i < signals.Length; i++)
+				this.signals.Add(signals[i]);
+
+			foreach(Oscillator oscil in signals)
+				oscil.frequency = oscil.modifier * this.frequency;
+
+		}
+
+//		public static Instrument operator ++ (Instrument instrument){
+//			
+//			return new Instrument();
+//			
+//		}
+//
+//		public static Instrument operator -- (Instrument instrument){
+//
+//			//reverse? voice?
+//
+//			return new Instrument();
+//			
+//		}
+
+		public Signal this[int index]{
 			
 			get{
 				
+				return signals[index];
+				
+			}
+			
+		}
+
+		public override float render{
+			
+			get{
+
+				float output = 0f;
+
+				for(int i = 0; i < signals.Count; i++)
+					sample += signals[i].render * this.amplitude;
+
+				return sample;
+				
+			}
+			
+		}
+
+		public override float datum{
+			
+			get{
+
+				sample = 0f;
+
+				for(int i = 0; i < signals.Count; i++)
+					sample += signals[i].datum * this.amplitude;
+
 				return sample;
 				
 			}
