@@ -13,7 +13,7 @@ public class Test : MonoBehaviour {
 
 	public AnimationCurve wave;
 	public float frequency = 1f, bitDepth = 32f;
-	private Oscillator sine, sawtooth, square, triangle, play;
+	private Oscillator sine, sawtooth, square, triangle, play, mod;
 	private Wavetable table;
 
 	private Instrument instrument;
@@ -22,18 +22,16 @@ public class Test : MonoBehaviour {
 
 		play = new Oscillator(0.1f, 1f);
 
-		Noise noise = new Noise(128d);
-
 		instrument = new Instrument(1f, 1f, play);
 		instrument.Frequency = 350f;
 		instrument.Amplitude = 1f;
-		//sinusoidal interpolation system 
 
 		Wavetable r1 = Wavetable.Sine;
 		Wavetable r2 = ~(++r1);
 		Wavetable r3 = ~r2;
 		Wavetable r4 = ~r3;
 
+        mod = new Oscillator(1f, 10f, r1);
 		sine = new Oscillator(1f, frequency, r1);
 		sawtooth = new Oscillator(1f, frequency, r2);
 		square = new Oscillator(1f, frequency, r3);
@@ -42,6 +40,8 @@ public class Test : MonoBehaviour {
 		sawtooth.Amplitude = 1f;
 		square.Amplitude = 1f;
 		triangle.Amplitude = 1f;
+
+        play.Modulator = mod;
 
 	}
 
@@ -58,8 +58,6 @@ public class Test : MonoBehaviour {
 		deltaTimeTest = 1 / Time.deltaTime;
 		currentFrameRate = Time.frameCount / Time.time;
 		averageDeltaTime = 1 / currentFrameRate;
-
-		//signal.sample vs signal.Render
 
 	}
 

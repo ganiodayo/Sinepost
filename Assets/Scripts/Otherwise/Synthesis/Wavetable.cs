@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
+using UnityEditor; //use this
 using System;
 
 namespace Otherwise {
 
 	public sealed class Wavetable {
-		
-		//own gui
 		
 		public delegate double Recurse(ref double x);
 		

@@ -2,7 +2,7 @@
 
 namespace Otherwise {
 
-	public abstract class Notated {
+	public abstract class Notated /* : IComparable */ {
 		
 		public float tempo = 120f;
 		public rhythmic signature;

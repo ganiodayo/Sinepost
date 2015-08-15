@@ -74,8 +74,8 @@ namespace Otherwise {
 		public override float Datum{
 			
 			get{
-				
-				sample = wavetable[phasor] * amplitude;
+                
+				float sample = wavetable[phasor] * amplitude * this.Modulate;    
 				
 				if(check == 0u)
 					phasor = (phasor + frequency * wavetable.Size / sampleRate) % wavetable.Size;

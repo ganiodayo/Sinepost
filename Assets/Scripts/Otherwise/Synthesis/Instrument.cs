@@ -5,8 +5,7 @@ using System.Collections.Generic;
 namespace Otherwise {
 
 	public class Instrument : Periodic, IEnumerable {
-		
-		public readonly Envelope envelope;
+
 		private List<Signal> signals = new List<Signal>();
 		
 		public Instrument(float amplitude, float frequency, params Signal[] signals){
@@ -84,12 +83,12 @@ namespace Otherwise {
 			
 			get{
 				
-				sample = 0f;
+				float sample = 0f;
 				
 				for(int i = 0; i < signals.Count; i++)
 					sample += signals[i].Datum * this.amplitude;
 				
-				return sample;
+				return sample * this.Modulate;
 				
 			}
 			
@@ -102,7 +101,7 @@ namespace Otherwise {
 			
 		}
 		
-		public override void Pan (Vector2 position){}
+		public override void Pan(Vector2 position){}
 		
 		public IEnumerator GetEnumerator(){
 			

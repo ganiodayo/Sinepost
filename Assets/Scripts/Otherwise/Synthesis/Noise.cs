@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 
 namespace Otherwise {
 
 	public class Noise : Signal {
 		
 		double rate;
+		float reflection;
 		public float[,] node = new float[128, 4];
 		
 		//noise node struct with phasorlike read
@@ -13,17 +15,15 @@ namespace Otherwise {
 		//
 		//amp = Math.Pow(3/4d, i/2d);
 		
-		class Tower {
-			
-			float[] node;
-			
-			
-			
+		class Node : SampleHold {
+
+			//delegates?
+
 		}
 		
 		public Noise(double alpha = 0d){
-			
-			rate = 1d / Math.Pow(sampleRate, alpha);
+
+			//rate = 1d / Math.Pow(sampleRate, alpha);
 			
 			for(int i = 0; i < 128; i++){
 				
@@ -65,7 +65,7 @@ namespace Otherwise {
 			
 			get{
 				
-				return sample;
+				return UnityEngine.Random.value * amplitude;
 				
 			}
 			
@@ -74,8 +74,8 @@ namespace Otherwise {
 		public override float Datum{
 			
 			get{
-				
-				return sample;
+
+                return UnityEngine.Random.value * amplitude;
 				
 			}
 			
@@ -88,7 +88,7 @@ namespace Otherwise {
 			
 		}
 		
-		public override void Pan (Vector2 position){}
+		public override void Pan(Vector2 position){}
 		
 	}
 
