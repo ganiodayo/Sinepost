@@ -2,7 +2,7 @@
 using UnityEditor; //use this
 using System;
 
-namespace Otherwise {
+namespace Sinepost {
 
 	public sealed class Wavetable {
 		

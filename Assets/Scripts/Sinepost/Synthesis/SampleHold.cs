@@ -1,41 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Otherwise {
+namespace Sinepost {
 
 	public class SampleHold : Periodic, IEnumerator {
 
-		float jitter, slew;
+		float jitter, slew; //parameters?
 
 		public SampleHold(){}
-		
-		public override float Amplitude{
-			
-			get{
-				
-				return amplitude;
-				
-			} set{
-				
-				amplitude = value * this.amplitudeModifier;
-				
-			}
-			
-		}
-		
-		public override float Frequency{
-			
-			get{
-				
-				return frequency;
-				
-			} set{
-				
-				frequency = value * this.frequencyModifier;
-				
-			}
-			
-		}
 		
 		public override float Render{
 			

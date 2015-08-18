@@ -1,4 +1,4 @@
-﻿namespace Otherwise {
+﻿namespace Sinepost {
 
 	public class Score : Notated {
 		

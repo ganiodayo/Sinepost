@@ -1,4 +1,4 @@
-﻿using Otherwise;
+﻿using Sinepost;
 using UnityEngine;
 using System;
 using System.Collections;
@@ -12,7 +12,7 @@ public class Test : MonoBehaviour {
 	public float floatDifference, currentFrameRate, averageDeltaTime, deltaTime, deltaTimeTest, unscaledDeltaTime, unscaledDeltaTimeTest;
 
 	public AnimationCurve wave;
-	public float frequency = 1f, bitDepth = 32f;
+	public float frequency = 1f, bitDepth = 32f, modFreq = 10f;
 	private Oscillator sine, sawtooth, square, triangle, play, mod;
 	private Wavetable table;
 
@@ -23,23 +23,18 @@ public class Test : MonoBehaviour {
 		play = new Oscillator(0.1f, 1f);
 
 		instrument = new Instrument(1f, 1f, play);
-		instrument.Frequency = 350f;
-		instrument.Amplitude = 1f;
+		instrument["Frequency"] = 350f;
 
 		Wavetable r1 = Wavetable.Sine;
 		Wavetable r2 = ~(++r1);
 		Wavetable r3 = ~r2;
 		Wavetable r4 = ~r3;
 
-        mod = new Oscillator(1f, 10f, r1);
-		sine = new Oscillator(1f, frequency, r1);
-		sawtooth = new Oscillator(1f, frequency, r2);
-		square = new Oscillator(1f, frequency, r3);
-		triangle = new Oscillator(1f, frequency, r4);
-		sine.Amplitude = 1f;
-		sawtooth.Amplitude = 1f;
-		square.Amplitude = 1f;
-		triangle.Amplitude = 1f;
+        mod = new Oscillator(r1);
+		sine = new Oscillator(r1);
+		sawtooth = new Oscillator(r2);
+		square = new Oscillator(r3);
+		triangle = new Oscillator(r4);
 
         play.Modulator = mod;
 
@@ -67,13 +62,15 @@ public class Test : MonoBehaviour {
 
 		float r1 = sine.Render, r2 = sawtooth.Render, r3 = square.Render, r4 = triangle.Render;
 
-		sine.Frequency = frequency;
-		sawtooth.Frequency = frequency;
-		square.Frequency = frequency;
-		triangle.Frequency = frequency;
+		sine["Frequency"] = frequency;
+        sawtooth["Frequency"] = frequency;
+        square["Frequency"] = frequency;
+        triangle["Frequency"] = frequency;
 		bitDepth = r2 * 31f + 1f;
 		Wavetable modulated = ((Wavetable.Sine * r1 + Wavetable.Sawtooth * r2) ^ bitDepth) |
 			((Wavetable.Square * r4 + Wavetable.Triangle * r3) ^ (33f - bitDepth));
+
+        mod["Frequency"] = modFreq;
 
 		foreach(Oscillator oscil in instrument){
 

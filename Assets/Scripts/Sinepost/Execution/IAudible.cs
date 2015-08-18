@@ -1,4 +1,4 @@
-﻿namespace Otherwise {
+﻿namespace Sinepost {
 
 	public interface IAudible {
 		

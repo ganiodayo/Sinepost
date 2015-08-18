@@ -2,19 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Otherwise {
+namespace Sinepost {
 
 	public class Instrument : Periodic, IEnumerable {
 
 		private List<Signal> signals = new List<Signal>();
 		
-		public Instrument(float amplitude, float frequency, params Signal[] signals){
-			
-			this.amplitude = amplitude;
-			this.amplitudeModifier = amplitude;
-			this.frequency = frequency;
-			this.frequencyModifier = frequency;
-			
+		public Instrument(float amplitude = 1f, float frequency = 1f, params Signal[] signals){
+
+            Setup(this, amplitude, frequency);
+
 			for(int i = 0; i < signals.Length; i++)
 				this.signals.Add(signals[i]);
 			
@@ -29,40 +26,16 @@ namespace Otherwise {
 			}
 			
 		}
-		
-		public override float Amplitude{
-			
-			get{
-				
-				return amplitude;
-				
-			} set{
-				
-				amplitude = value * this.amplitudeModifier;
-				
-				foreach(Signal audible in signals)
-					audible.Amplitude = amplitude;
-				
-			}
-			
-		}
-		
-		public override float Frequency{
-			
-			get{
-				
-				return frequency;
-				
-			} set{
-				
-				frequency = value * this.frequencyModifier;
-				
-				foreach(Periodic periodic in signals)
-					periodic.Frequency = frequency;
-				
-			}
-			
-		}
+
+        public int Count{
+            
+            get{
+
+                return signals.Count;
+
+            }
+
+        }
 		
 		public override float Render{
 			
@@ -71,7 +44,7 @@ namespace Otherwise {
 				float output = 0f;
 				
 				for(int i = 0; i < signals.Count; i++)
-					output += signals[i].Render * this.amplitude;
+					output += signals[i].Render * this["Amplitude"];
 				
 				return output;
 				
@@ -86,9 +59,9 @@ namespace Otherwise {
 				float sample = 0f;
 				
 				for(int i = 0; i < signals.Count; i++)
-					sample += signals[i].Datum * this.amplitude;
+                    sample += signals[i].Datum * this["Amplitude"];
 				
-				return sample * this.Modulate;
+				return sample * this.Modulation;
 				
 			}
 			

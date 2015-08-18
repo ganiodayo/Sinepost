@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Otherwise {
+namespace Sinepost {
 
 	public class Markov {
 		

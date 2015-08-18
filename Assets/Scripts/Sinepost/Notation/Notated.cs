@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Otherwise {
+namespace Sinepost {
 
 	public abstract class Notated /* : IComparable */ {
 		

@@ -1,65 +1,22 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections.Generic;
 
-namespace Otherwise {
+namespace Sinepost {
 
 	public abstract class Signal : Modulatable, IComparable {
 
-		protected readonly int sampleRate = AudioSettings.outputSampleRate;
+        protected readonly int sampleRate = AudioSettings.outputSampleRate;
 		protected readonly double init = AudioSettings.dspTime;
-		protected uint check = 0, channels = 2;
-		protected float amplitude, amplitudeModifier = 1f;
+		protected uint check = 0u, channels = 2u;
+	    //protected float amplitude, amplitudeModifier = 1f;
 		protected float[] panner;
+        protected Parameter<Signal> amplitude;
 
 		protected Envelope envelope;
 		//Duration parameter;
 
-        protected class Parameter : Modulatable {
-
-            private float actual, modifier;
-
-            private Parameter(float f){
-
-                actual = f;
-                modifier = f;
-
-            }
-
-            public static implicit operator Parameter(float f){
-
-                return new Parameter(f);
-
-            }
-
-            public static implicit operator Parameter(double d){
-
-                return new Parameter((float)d);
-
-            }
-
-            public static implicit operator float(Parameter value){
-
-                return value.actual;
-
-            }
-
-            public float Value{
-
-                get{
-
-                    return actual * this.Modulate;
-                
-                } set{
-
-                    actual = value * modifier;
-
-                }
-
-            }
-
-        }
-
-		public abstract float Amplitude{ get; set; }
+		//public abstract float Amplitude{ get; set; }
 		public abstract float Render{ get; }
 		public abstract float Datum{ get; }
 		public abstract void Stream(ref float[] data);
@@ -108,6 +65,20 @@ namespace Otherwise {
 			return 0; //can this be useful?
 			
 		}
+
+        protected virtual void Setup(float amplitude){
+
+            this.amplitude = new Parameter<Signal>("Amplitude", amplitude);
+            parameters.Add(this.amplitude);
+
+        }
+
+        protected virtual void Setup(Instrument context, float amplitude){
+
+            this.amplitude = new Parameter<Signal>(context, "Amplitude", amplitude);
+            parameters.Add(this.amplitude);
+
+        }
 		
 	}
 

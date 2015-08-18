@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Otherwise {
+namespace Sinepost {
 
 	public sealed class Instrumentalist : MonoBehaviour, IAudible {
 		

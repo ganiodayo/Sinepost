@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 
-namespace Otherwise {
+namespace Sinepost {
 
 	public class Noise : Signal {
 		
@@ -47,25 +47,11 @@ namespace Otherwise {
 			
 		}
 		
-		public override float Amplitude{
-			
-			get{
-				
-				return amplitude;
-				
-			} set{
-				
-				amplitude = value * this.amplitudeModifier;
-				
-			}
-			
-		}
-		
 		public override float Render{
 			
 			get{
 				
-				return UnityEngine.Random.value * amplitude;
+				return UnityEngine.Random.value * this["Amplitude"];
 				
 			}
 			
@@ -75,7 +61,7 @@ namespace Otherwise {
 			
 			get{
 
-                return UnityEngine.Random.value * amplitude;
+                return UnityEngine.Random.value * this["Amplitude"];
 				
 			}
 			
