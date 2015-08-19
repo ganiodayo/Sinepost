@@ -423,6 +423,14 @@ namespace Sinepost {
 			return wave;
 			
 		}
+
+        public static Wavetable operator / (Wavetable wave, float f){
+
+            wave.ratio = 1/f;
+
+            return wave;
+
+        }
 		
 		public float this[int index]{
 			

@@ -59,22 +59,15 @@ namespace Sinepost {
 				float sample = 0f;
 				
 				for(int i = 0; i < signals.Count; i++)
-                    sample += signals[i].Datum * this["Amplitude"];
-				
+                    sample += signals[i].Datum * panner[check] * this["Amplitude"];
+
+                check = (check + 1u) % channels;
+
 				return sample * this.Modulation;
 				
 			}
 			
 		}
-		
-		public override void Stream(ref float[] data){
-			
-			for(int i = 0; i < data.Length; i++)
-				data[i] = Datum;
-			
-		}
-		
-		public override void Pan(Vector2 position){}
 		
 		public IEnumerator GetEnumerator(){
 			

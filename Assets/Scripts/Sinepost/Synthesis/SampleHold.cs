@@ -28,15 +28,6 @@ namespace Sinepost {
 			}
 			
 		}
-		
-		public override void Stream(ref float[] data){
-			
-			for(int i = 0; i < data.Length; i++)
-				data[i] = Datum;
-			
-		}
-		
-		public override void Pan(Vector2 position){}
 
 		public object Current{
 

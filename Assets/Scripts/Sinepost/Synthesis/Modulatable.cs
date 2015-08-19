@@ -57,7 +57,7 @@ namespace Sinepost {
 
         }
 
-        public void Modulate(string parameter, params Signal[] modulators){
+        public void Modulate(string parameter = "Ring", params Signal[] modulators){
 
             if(parameter != "Ring"){
 

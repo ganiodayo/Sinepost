@@ -9,6 +9,7 @@ namespace Sinepost {
 		double rate;
 		float reflection;
 		public float[,] node = new float[128, 4];
+        System.Random random = new System.Random();
 		
 		//noise node struct with phasorlike read
 		//buffersize
@@ -21,10 +22,12 @@ namespace Sinepost {
 
 		}
 		
-		public Noise(double alpha = 0d){
+		public Noise(float amplitude = 1f, double alpha = 0d){
 
 			//rate = 1d / Math.Pow(sampleRate, alpha);
-			
+
+            Setup(amplitude);
+
 			for(int i = 0; i < 128; i++){
 				
 				node[i, 3] = sampleRate / Mathf.Pow(2f, (139f - i) / 12f);
@@ -43,7 +46,7 @@ namespace Sinepost {
 				c += node[i, 2];
 			}
 			
-			Debug.Log (a + ", " + b + ", " + c);
+			//Debug.Log (a + ", " + b + ", " + c);
 			
 		}
 		
@@ -51,7 +54,7 @@ namespace Sinepost {
 			
 			get{
 				
-				return UnityEngine.Random.value * this["Amplitude"];
+				return (float)(1 - 2 * random.NextDouble()) * this["Amplitude"];
 				
 			}
 			
@@ -61,20 +64,11 @@ namespace Sinepost {
 			
 			get{
 
-                return UnityEngine.Random.value * this["Amplitude"];
+                return (float)(1 - 2 * random.NextDouble()) * this["Amplitude"];
 				
 			}
 			
 		}
-		
-		public override void Stream(ref float[] data){
-			
-			for(int i = 0; i < data.Length; i++)
-				data[i] = Datum;
-			
-		}
-		
-		public override void Pan(Vector2 position){}
 		
 	}
 

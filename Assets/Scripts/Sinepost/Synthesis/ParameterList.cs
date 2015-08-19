@@ -14,7 +14,7 @@ namespace Sinepost {
 
             }
 
-            public static ParameterList operator + (ParameterList list, Parameter<Signal> parameter){
+            public static ParameterList operator + (ParameterList list, Parameter parameter){
 
                 list.Add(parameter.name, parameter);
 

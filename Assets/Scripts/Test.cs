@@ -11,19 +11,48 @@ public class Test : MonoBehaviour {
 	[HideInInspector]
 	public float floatDifference, currentFrameRate, averageDeltaTime, deltaTime, deltaTimeTest, unscaledDeltaTime, unscaledDeltaTimeTest;
 
-	public AnimationCurve wave;
+    public AnimationCurve wave;
 	public float frequency = 1f, bitDepth = 32f, modFreq = 10f;
 	private Oscillator sine, sawtooth, square, triangle, play, mod;
 	private Wavetable table;
-
 	private Instrument instrument;
+    public Transform position;
+    public bool flip;
+    float[] scale = new float[5]{0f, 03f, 5f, 7f, 10f};
+
+    IEnumerator Notes(){
+
+        while(true){
+
+            instrument[0]["Frequency"] = 440f * Mathf.Pow(2f, (float)(UnityEngine.Random.Range(2, 3)
+                    * 12 + scale[UnityEngine.Random.Range(0, scale.Length)] - 12 * 5 + 9) / 12f);
+            instrument[1]["Frequency"] = 440f * Mathf.Pow(2f, (float)(UnityEngine.Random.Range(2, 4)
+                    * 12 + scale[UnityEngine.Random.Range(0, scale.Length)] - 12 * 5 + 9) / 12f);
+            instrument[2]["Frequency"] = 440f * Mathf.Pow(2f, (float)(UnityEngine.Random.Range(2, 4)
+                    * 12 + scale[UnityEngine.Random.Range(0, scale.Length)] - 12 * 5 + 9) / 12f);
+
+            yield return new WaitForSeconds(0.18f);
+
+            instrument[1]["Frequency"] = 440f * Mathf.Pow(2f, (float)(UnityEngine.Random.Range(2, 4)
+                    * 12 + scale[UnityEngine.Random.Range(0, scale.Length)] - 12 * 5 + 9) / 12f);
+
+            yield return new WaitForSeconds(0.09f);
+
+            instrument[2]["Frequency"] = 440f * Mathf.Pow(2f, (float)(UnityEngine.Random.Range(2, 4)
+                    * 12 + scale[UnityEngine.Random.Range(0, scale.Length)] - 12 * 5 + 9) / 12f);
+
+            yield return new WaitForSeconds(0.09f);
+
+        }
+
+    }
 
 	void Awake(){
 
-		play = new Oscillator(0.1f, 1f);
+		play = new Oscillator(0.3f);
+        play.Modulate("Frequency", new Noise(0.1f), new Oscillator(0.005f, 80f));
 
-		instrument = new Instrument(1f, 1f, play);
-		instrument["Frequency"] = 350f;
+		instrument = new Instrument(1f, 1f, play, new Oscillator(0.3f), new Oscillator(0.3f));
 
 		Wavetable r1 = Wavetable.Sine;
 		Wavetable r2 = ~(++r1);
@@ -37,6 +66,8 @@ public class Test : MonoBehaviour {
 		triangle = new Oscillator(r4);
 
         play.Modulator = mod;
+
+        StartCoroutine(Notes());
 
 	}
 
@@ -75,10 +106,13 @@ public class Test : MonoBehaviour {
 		foreach(Oscillator oscil in instrument){
 
 			oscil.wavetable = modulated;
-
 			wave = oscil.wavetable;
 
 		}
+
+        instrument.host = flip ? -position.position : position.position;
+        instrument[1].Pan(position.position);
+        instrument[2].Pan(-position.position);
 
 	}
 

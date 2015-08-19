@@ -8,17 +8,17 @@ namespace Sinepost {
 
         protected virtual void Setup(float amplitude, float frequency){
 
-            this.amplitude = new Parameter<Signal>("Amplitude", amplitude);
+            base.Setup(amplitude);
             this.frequency = new Parameter<Periodic>("Frequency", frequency);
-            parameters.Add(this.amplitude, this.frequency);
+            parameters += this.frequency;
 
         }
 
         protected virtual void Setup(Instrument context, float amplitude, float frequency){
 
-            this.amplitude = new Parameter<Signal>(context, "Amplitude", amplitude);
+            base.Setup(context, amplitude);
             this.frequency = new Parameter<Periodic>(context, "Frequency", frequency);
-            parameters.Add(this.amplitude, this.frequency);
+            parameters += this.frequency;
 
         }
 		
