@@ -44,7 +44,7 @@ namespace Sinepost {
 				float output = 0f;
 				
 				for(int i = 0; i < signals.Count; i++)
-					output += signals[i].Render * this["Amplitude"];
+					output += signals[i].Render;
 				
 				return output;
 				
@@ -59,7 +59,7 @@ namespace Sinepost {
 				float sample = 0f;
 				
 				for(int i = 0; i < signals.Count; i++)
-                    sample += signals[i].Datum * panner[check] * this["Amplitude"];
+                    sample += signals[i].Datum * panner[check];
 
                 check = (check + 1u) % channels;
 

@@ -7,12 +7,12 @@ namespace Sinepost {
 	public sealed class Wavetable {
 		
 		public delegate double Recurse(ref double x);
-		
+        private const uint defaultSize = 1024u;
+        private readonly uint size;
 		private readonly float[] waveform;
-		private readonly uint size;
 		private float ratio = 1f;
 		
-		public Wavetable(double[] amplitude, uint size = 4096u){
+		public Wavetable(double[] amplitude, uint size = defaultSize){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -37,7 +37,7 @@ namespace Sinepost {
 			
 		}
 		
-		public Wavetable(Recurse amplitude, uint iterations = 64u, uint size = 4096u){
+		public Wavetable(Recurse amplitude, uint iterations = 64u, uint size = defaultSize){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -63,7 +63,7 @@ namespace Sinepost {
 			
 		}
 		
-		public Wavetable(double[] partial, double[] amplitude, uint size = 4096u){
+		public Wavetable(double[] partial, double[] amplitude, uint size = defaultSize){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -88,7 +88,7 @@ namespace Sinepost {
 			
 		}
 		
-		public Wavetable(Recurse partial, Recurse amplitude, uint iterations = 64u, uint size = 4096u){
+		public Wavetable(Recurse partial, Recurse amplitude, uint iterations = 64u, uint size = defaultSize){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -115,7 +115,7 @@ namespace Sinepost {
 			
 		}
 		
-		public Wavetable(double[] partial, double[] amplitude, double[] phase, uint size = 4096u){
+		public Wavetable(double[] partial, double[] amplitude, double[] phase, uint size = defaultSize){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -140,7 +140,7 @@ namespace Sinepost {
 			
 		}
 		
-		public Wavetable(Recurse partial, Recurse amplitude, Recurse phase, uint iterations = 64u, uint size = 4096u){
+		public Wavetable(Recurse partial, Recurse amplitude, Recurse phase, uint iterations = 64u, uint size = defaultSize){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -168,7 +168,7 @@ namespace Sinepost {
 			
 		}
 		
-		public Wavetable(double[] partial, double[] amplitude, double[] phase, double[] offset, uint size = 4096u){
+		public Wavetable(double[] partial, double[] amplitude, double[] phase, double[] offset, uint size = defaultSize){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -193,7 +193,7 @@ namespace Sinepost {
 			
 		}
 		
-		public Wavetable(Recurse partial, Recurse amplitude, Recurse phase, Recurse offset, uint iterations = 64u, uint size = 4096u){
+		public Wavetable(Recurse partial, Recurse amplitude, Recurse phase, Recurse offset, uint iterations = 64u, uint size = defaultSize){
 			
 			this.size = size;
 			waveform = new float[this.size];
@@ -222,7 +222,7 @@ namespace Sinepost {
 			
 		}
 		
-		public Wavetable(Markov chain, bool mirror = false, uint size = 4096u){
+		public Wavetable(Markov chain, bool mirror = false, uint size = defaultSize){
 			
 			//fix this
 			
@@ -327,10 +327,10 @@ namespace Sinepost {
 		
 		public static Wavetable operator + (Wavetable w1, Wavetable w2){
 			
-			float[] waveform = new float[4096];
+			float[] waveform = new float[defaultSize];
 			
-			for(int i = 0; i < 4096; i++)
-				waveform[i] = w1.ratio * w1[i * w1.Size / 4096f] + w2.ratio * w2[i * w2.Size / 4096f];
+			for(int i = 0; i < defaultSize; i++)
+				waveform[i] = w1.ratio * w1[i * w1.Size / defaultSize] + w2.ratio * w2[i * w2.Size / defaultSize];
 			
 			return new Wavetable(waveform);
 			
@@ -338,10 +338,10 @@ namespace Sinepost {
 		
 		public static Wavetable operator - (Wavetable w1, Wavetable w2){
 			
-			float[] waveform = new float[4096];
+			float[] waveform = new float[defaultSize];
 			
-			for(int i = 0; i < 4096; i++)
-				waveform[i] = w1.ratio * w1[i * w1.Size / 4096f] - w2.ratio * w2[i * w2.Size / 4096f];
+			for(int i = 0; i < defaultSize; i++)
+				waveform[i] = w1.ratio * w1[i * w1.Size / defaultSize] - w2.ratio * w2[i * w2.Size / defaultSize];
 			
 			return new Wavetable(waveform);
 			
@@ -349,10 +349,10 @@ namespace Sinepost {
 		
 		public static Wavetable operator * (Wavetable w1, Wavetable w2){
 			
-			float[] waveform = new float[4096];
+			float[] waveform = new float[defaultSize];
 			
-			for(int i = 0; i < 4096; i++)
-				waveform[i] = w1[i * w1.Size / 4096f] * w2[i * w2.Size / 4096f];
+			for(int i = 0; i < defaultSize; i++)
+				waveform[i] = w1[i * w1.Size / defaultSize] * w2[i * w2.Size / defaultSize];
 			
 			return new Wavetable(waveform);
 			
@@ -360,10 +360,10 @@ namespace Sinepost {
 		
 		public static Wavetable operator / (Wavetable w1, Wavetable w2){
 			
-			float[] waveform = new float[4096];
+			float[] waveform = new float[defaultSize];
 			
-			for(int i = 0; i < 4096; i++)
-				waveform[i] = w1[i * w1.Size / 4096f] / w2[i * w2.Size / 4096f];
+			for(int i = 0; i < defaultSize; i++)
+				waveform[i] = w1[i * w1.Size / defaultSize] / w2[i * w2.Size / defaultSize];
 			
 			return new Wavetable(waveform);
 			
@@ -385,10 +385,10 @@ namespace Sinepost {
 			
 			w1.ratio /= w1.ratio + w2.ratio;
 			w2.ratio = 1f - w1.ratio;
-			float[] waveform = new float[4096];
+			float[] waveform = new float[defaultSize];
 			
-			for(int i = 0; i < 4096; i++)
-				waveform[i] = i <= w1.ratio * 4096f ? w1[i * w1.Size / 4096f] : w2[i * w2.Size / 4096f];
+			for(int i = 0; i < defaultSize; i++)
+				waveform[i] = i <= w1.ratio * defaultSize ? w1[i * w1.Size / defaultSize] : w2[i * w2.Size / defaultSize];
 			
 			return new Wavetable(waveform);
 			
@@ -474,10 +474,10 @@ namespace Sinepost {
 		
 		public static implicit operator Wavetable(AnimationCurve curve){
 			
-			float[] waveform = new float[4096];
+			float[] waveform = new float[defaultSize];
 			
-			for(int i = 0; i < 4096; i++)
-				waveform[i] = curve.Evaluate(i / 4096f);
+			for(int i = 0; i < defaultSize; i++)
+				waveform[i] = curve.Evaluate(i / defaultSize);
 			
 			return new Wavetable(waveform);
 			

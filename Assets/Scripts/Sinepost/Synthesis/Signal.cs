@@ -6,6 +6,7 @@ namespace Sinepost {
 
 	public abstract class Signal : Modulatable, IComparable {
 
+        public float pan = 0f;
         public Vector2 host;
 
         protected readonly int sampleRate = AudioSettings.outputSampleRate;
@@ -119,8 +120,32 @@ namespace Sinepost {
 			
 		}
 
-        public void Pan(Vector2 position){
+        private void Pan(){
 
+            if(channels == 2u){
+
+                panner[0] = Mathf.Sqrt(1f - (pan + 1f) / 2f);
+                panner[1] = Mathf.Sqrt((pan + 1f) / 2f);
+
+            } else
+                Pan(new Vector2(pan, 0f));
+
+        }
+
+        public void Pan(float x){
+
+            if(channels == 2u){
+
+                panner[0] = Mathf.Sqrt(1f - (x + 1f) / 2f);
+                panner[1] = Mathf.Sqrt((x + 1f) / 2f);
+
+            } else
+                Pan(new Vector2(x, 0f));
+
+        }
+
+        public void Pan(Vector2 position){
+            
             for(uint i = 0; i < panner.Length; i++)
                 panner[i] = Mathf.Sqrt(Mathf.Abs(1f - (reference[i] - position).magnitude));
 
@@ -131,7 +156,7 @@ namespace Sinepost {
             channels = SpeakerMode;
             reference = SpeakerPositions;
             panner = new float[channels];
-            Pan(Vector2.zero);
+            Pan();
             this.amplitude = new Parameter<Signal>("Amplitude", amplitude);
             parameters += this.amplitude;
 
@@ -149,8 +174,6 @@ namespace Sinepost {
         }
 
         public void Stream(ref float[] data){
-
-            Pan(host);
 
             for(int i = 0; i < data.Length; i++)
                 data[i] = Datum;

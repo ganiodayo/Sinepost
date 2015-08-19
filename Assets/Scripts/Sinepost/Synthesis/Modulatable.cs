@@ -22,7 +22,7 @@ namespace Sinepost {
 
             get{
 
-                return parameters[name];
+                return parameters[name]; //try catch exposed parameter throw error
 
             } set{
 
