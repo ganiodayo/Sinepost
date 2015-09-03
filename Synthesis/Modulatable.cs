@@ -19,8 +19,7 @@
 
 using System.Collections.Generic;
 
-namespace Sinepost.Synthesis
-{
+namespace Sinepost.Synthesis {
 
 	public abstract partial class Modulatable {
 

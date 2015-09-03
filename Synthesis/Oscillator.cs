@@ -21,7 +21,7 @@ using UnityEngine;
 
 namespace Sinepost.Synthesis {
 
-	public class Oscillator : Periodic {
+	public sealed class Oscillator : Periodic {
 		
 		private float phasor;
 		public Wavetable wavetable;

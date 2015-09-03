@@ -20,8 +20,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Sinepost.Synthesis
-{
+namespace Sinepost.Synthesis {
 
 	public class Instrument : Periodic, IEnumerable {
 

@@ -239,30 +239,6 @@ namespace Sinepost.Synthesis {
 				waveform[i] /= peak;
 			
 		}
-		
-        //public Wavetable(Markov chain, bool mirror = false, uint size = defaultSize){
-			
-        //    //fix this
-			
-        //    this.size = size;
-        //    waveform = new float[this.size];
-			
-        //    float peak = float.MinValue;
-			
-        //    for(int i = 0; i < waveform.Length; i++){
-				
-        //        waveform[i] = mirror && i >= waveform.Length / 2 ? -waveform[waveform.Length / 2 - i] : chain.Next();
-				
-        //        if(Mathf.Abs(this.waveform[i]) > peak)
-        //            peak = Mathf.Abs(this.waveform[i]);
-				
-        //    }
-			
-        //    for(int i = 0; i < this.size; i++)
-        //        this.waveform[i] /= peak;
-			
-        //}
-		
 		private Wavetable(float[] waveform){
 			
 			this.waveform = waveform;
@@ -349,8 +325,11 @@ namespace Sinepost.Synthesis {
 			
 			for(int i = 0; i < defaultSize; i++)
 				waveform[i] = w1.ratio * w1[i * w1.Size / defaultSize] + w2.ratio * w2[i * w2.Size / defaultSize];
-			
-			return new Wavetable(waveform);
+
+			Wavetable output = new Wavetable(waveform);
+			output.ratio = w1.ratio + w2.ratio;
+
+			return output;
 			
 		}
 		
@@ -360,9 +339,12 @@ namespace Sinepost.Synthesis {
 			
 			for(int i = 0; i < defaultSize; i++)
 				waveform[i] = w1.ratio * w1[i * w1.Size / defaultSize] - w2.ratio * w2[i * w2.Size / defaultSize];
-			
-			return new Wavetable(waveform);
-			
+
+			Wavetable output = new Wavetable(waveform);
+			output.ratio = w1.ratio + w2.ratio;
+
+			return output;
+
 		}
 		
 		public static Wavetable operator * (Wavetable w1, Wavetable w2){
@@ -469,15 +451,6 @@ namespace Sinepost.Synthesis {
 			}
 			
 		}
-		
-        //public static implicit operator Markov(Wavetable wave){
-			
-        //    Markov chain = new Markov((int)wave.Size);
-        //    chain.Stream(wave.waveform);
-			
-        //    return chain;
-			
-        //}
 		
 		public static implicit operator AnimationCurve(Wavetable wave){
 			
