@@ -19,10 +19,28 @@
 
 namespace Sinepost.Synthesis {
 
-    public sealed class Orchestra : Instrument {
+    public sealed class Orchestra : Signal {
 
+		public override float Render{
 
+			get{
 
-    }
+				return 0f;
+
+			}
+
+		}
+
+		public override float Datum{
+
+			get{
+
+				return 0f;
+
+			}
+
+		}
+
+	}
 
 }

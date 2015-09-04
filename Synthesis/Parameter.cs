@@ -39,7 +39,7 @@ namespace Sinepost.Synthesis {
 
         protected class Parameter<T> : Parameter where T : Modulatable {
 
-            protected readonly float modifier;
+            private readonly float modifier;
 
             public Parameter(string name, float f = 1f){
 
@@ -72,7 +72,6 @@ namespace Sinepost.Synthesis {
 
                         foreach(T signal in context)
                             signal[name] = actual;
-                            
 
                     }
 

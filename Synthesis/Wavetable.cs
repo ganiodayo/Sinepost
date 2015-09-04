@@ -239,6 +239,7 @@ namespace Sinepost.Synthesis {
 				waveform[i] /= peak;
 			
 		}
+
 		private Wavetable(float[] waveform){
 			
 			this.waveform = waveform;
